@@ -22,8 +22,7 @@
     return r.json();
   }
   async function apiPost(body) {
-    // keepalive: 결과 화면을 바로 닫거나 앱을 꺼도 전송이 끝까지 가요
-    const r = await fetch(API, { method: "POST", body: JSON.stringify(body), keepalive: true });
+    const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });
     return r.json();
   }
 
@@ -499,16 +498,19 @@
         const mine = rows[me];
         const first = mine.score === att.score && Math.abs(mine.ms - ms) < 1500;
         note.textContent = (first ? `랭킹 ${placeOf(rows, me)}등이에요!` : `랭킹에는 첫 기록(${mine.score}점)이 올라가 있어요. 지금 순위 ${placeOf(rows, me)}등.`);
-      } else note.textContent = res === "offline" ? "인터넷이 연결되면 자동으로 랭킹에 올라가요." : "기록을 보냈어요. 랭킹 탭에서 확인하세요.";
-    } else if (API) note.textContent = res === "offline" ? "인터넷이 연결되면 자동으로 저장돼요." : "기록을 저장했어요.";
+      } else note.textContent = res === "ok" ? "기록을 보냈어요. 잠시 뒤 랭킹을 새로고침해 보세요." : "전송이 늦어지고 있어요. 자동으로 다시 보내니 이 화면을 그대로 두셔도 돼요.";
+    } else if (API) note.textContent = res === "ok" ? "기록을 저장했어요." : "전송이 늦어지고 있어요. 자동으로 다시 보낼게요.";
   }
 
   /* ---------- 기록 보내기 ---------- */
   let flushing = null;
   function flush() {
     if (!API) return Promise.resolve("noapi");
-    if (flushing) return flushing;
-    flushing = (async () => {
+    // 이미 보내는 중이면, 그게 끝난 뒤 새로 들어온 기록까지 이어서 보내요
+    if (flushing) return flushing.then(() => flush());
+    // 주의: 보낼 게 없으면 아래 함수가 곧바로 끝나요. '보내는 중' 표시는 반드시 끝난 뒤에 지워야
+    // 다음 전송이 막히지 않아요 (예전에는 여기서 멈춰서 기록이 다음 접속 때까지 밀렸어요).
+    const run = (async () => {
       const q = store.get("np-queue", []), keep = [];
       let status = "ok";
       for (let k = 0; k < q.length; k++) {
@@ -530,13 +532,32 @@
       }
       const sent = new Set(q.map(x => x.id));
       store.set("np-queue", [...keep, ...store.get("np-queue", []).filter(x => !sent.has(x.id))]);
-      if (status === "ok") loadServerHist();
-      if (status === "retry") setTimeout(flush, 5000);
-      flushing = null; return status;
+      if (status === "ok") { loadServerHist(); retryDelay = 5000; }
+      // 실패하면 5초 → 10초 → 20초 … (최대 1분) 간격으로 자동 재전송
+      if ((status === "retry" || status === "offline") && store.get("np-queue", []).length) {
+        clearTimeout(retryTimer); retryTimer = setTimeout(flush, retryDelay); retryDelay = Math.min(retryDelay * 2, 60000);
+      }
+      return status;
     })();
-    return flushing;
+    flushing = run;
+    run.finally(() => { if (flushing === run) flushing = null; });
+    return run;
   }
+  let retryTimer = null, retryDelay = 5000;
   window.addEventListener("online", () => flush());
+  // 사이트로 돌아오면 남은 기록을 바로 보내고, 떠날 때는 sendBeacon으로 한 번 더 보내요 (중복은 서버가 걸러요)
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) { flush(); return; }
+    beaconQueue();
+  });
+  window.addEventListener("pagehide", beaconQueue);
+  function beaconQueue() {
+    if (!API || !navigator.sendBeacon) return;
+    store.get("np-queue", []).forEach(item => {
+      if (!item.guest) { if (!user || user.guest || user.name !== item.name || !user.token) return; item = { ...item, token: user.token }; }
+      try { navigator.sendBeacon(API, new Blob([JSON.stringify(item)], { type: "text/plain;charset=utf-8" })); } catch {}
+    });
+  }
 
   /* ---------- 랭킹 ---------- */
   const placeOf = (rows, i) => { let p = i; while (p > 0 && rows[p - 1].score === rows[i].score && rows[p - 1].ms === rows[i].ms) p--; return p + 1; };
