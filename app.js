@@ -59,8 +59,9 @@
   const keyFor = k => "np-" + k + ":" + (user ? (user.guest ? "손님 " : "") + user.name : "-");
   const myHist = () => store.get(keyFor("hist"), []);
   const myWrong = () => store.get(keyFor("wrong"), {});
-  const rankName = () => user ? (user.guest ? "손님 " + user.name : user.name) : "";
-  const showName = n => n.startsWith("손님 ") ? n.slice(3) + " (게스트)" : n;
+  const rankName = () => user ? (user.guest ? "게스트 " + user.name : user.name) : "";
+  const isMine = n => !!user && (n === rankName() || (user.guest && n === "손님 " + user.name));
+  const showName = n => /^(손님|게스트) /.test(n) ? n.replace(/^(손님|게스트) /, "") + " (게스트)" : n;
   let serverHist = null;
 
   function setUser(u) {
@@ -472,7 +473,7 @@
     const res = await flush();
     if (kind === "game") {
       const rows = await loadRanking();
-      const me = rows ? rows.findIndex(r => r.name === rankName()) : -1;
+      const me = rows ? rows.findIndex(r => isMine(r.name)) : -1;
       if (me >= 0) {
         const mine = rows[me];
         const first = mine.score === att.score && Math.abs(mine.ms - ms) < 1500;
@@ -534,9 +535,9 @@
     if (!rows.length) { ul.append(el("li", "empty", "아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!")); ul.firstChild.style.display = "block"; return; }
     rows.forEach((r, i) => {
       const p = placeOf(rows, i), li = el("li");
-      if (r.name === rankName()) li.className = "me";
+      if (isMine(r.name)) li.className = "me";
       li.append(el("span", "rank" + (p <= 3 ? " r" + p : ""), String(p)));
-      const nm = el("span", "bname", showName(r.name)); if (r.name === rankName()) nm.append(el("small", null, "나"));
+      const nm = el("span", "bname", showName(r.name)); if (isMine(r.name)) nm.append(el("small", null, "나"));
       li.append(nm);
       const pts = el("span", "bpts"); pts.append(el("b", null, `${r.score}/${r.total}`), el("span", null, fmt(r.ms)));
       li.append(pts); ul.append(li);
@@ -544,7 +545,7 @@
   }
   function renderGameNote() {
     const n = $("#game-note");
-    const mine = lastRows && user ? lastRows.find(r => r.name === rankName()) : null;
+    const mine = lastRows && user ? lastRows.find(r => isMine(r.name)) : null;
     n.textContent = mine ? `이미 랭킹에 올라가 있어요 (${mine.score}/${mine.total}). 다시 풀 수 있지만 순위는 첫 기록 기준이에요.` : "랭킹에는 첫 번째 기록만 올라가요.";
   }
   $("#refresh-rank").addEventListener("click", loadRanking);
