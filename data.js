@@ -3,7 +3,7 @@
    문제를 고치거나 추가할 때는 이 파일만 수정하면 돼요. 문제ID는 겹치지 않게 해주세요. */
 
 /* 구글 Apps Script 웹 앱 주소 (설정 안내서 3단계에서 복사한 주소를 따옴표 안에 붙여넣기) */
-window.API_URL = "https://script.google.com/macros/s/AKfycbzVk6GUWMvol5_ntT2DAWL4MXt30PniPD5IpT0AHjZL3r01mSbH7e5Zw2kg0cWkEFhL/exec";
+window.API_URL = "https://script.google.com/macros/s/AKfycbygS-2PU8MGzyZgWdPo3DYagfUOjCH-MqoBaPNWIfTHJfuC4dpHzfxCs1XE8ZibthYUOw/exec";
 
 /* 명단은 구글 시트 "명단" 탭에서 불러와요 (서버 주소가 없을 때만 아래 목록을 써요) */
 window.MEMBERS = [];
