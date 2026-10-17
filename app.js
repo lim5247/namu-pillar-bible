@@ -70,7 +70,17 @@
     // 게스트에게는 10/18 활동 대신 필라장의 인사를 먼저 보여줘요
     $("#guest-letter").hidden = !(u && u.guest);
     $("#activity").hidden = !!(u && u.guest);
-    renderWrong(); renderUnit(curUnit); renderGameNote(); loadServerHist(); flush();
+    renderWrong(); renderUnit(curUnit); renderGameNote(); loadServerHist(); flush(); logVisit();
+  }
+
+  /* ---------- 게스트 방문 기록: 이름을 입력하고 들어오면 시트에 남겨요 (같은 기기에서는 하루 한 번) ---------- */
+  async function logVisit() {
+    if (!API || !user || !user.guest) return;
+    const k = keyFor("visit"), today = new Date().toLocaleDateString("ko-KR");
+    if (store.get(k, "") === today) return;
+    store.set(k, today);
+    try { const r = await apiPost({ action: "visit", name: user.name }); if (!r.ok) store.set(k, ""); }
+    catch { store.set(k, ""); }
   }
 
   /* ---------- 이름 고르기 ---------- */
