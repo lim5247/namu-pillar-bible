@@ -22,7 +22,8 @@
     return r.json();
   }
   async function apiPost(body) {
-    const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });
+    // keepalive: 결과 화면을 바로 닫거나 앱을 꺼도 전송이 끝까지 가요
+    const r = await fetch(API, { method: "POST", body: JSON.stringify(body), keepalive: true });
     return r.json();
   }
 
