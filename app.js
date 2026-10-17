@@ -66,6 +66,9 @@
   function setUser(u) {
     user = u; store.set("np-user", u); serverHist = null;
     $("#who-btn").textContent = u ? u.name + (u.guest ? " (게스트)" : " 님") : "이름 고르기";
+    // 게스트에게는 10/18 활동 대신 필라장의 인사를 먼저 보여줘요
+    $("#guest-letter").hidden = !(u && u.guest);
+    $("#activity").hidden = !!(u && u.guest);
     renderWrong(); renderUnit(curUnit); renderGameNote(); loadServerHist(); flush();
   }
 

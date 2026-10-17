@@ -201,6 +201,12 @@ section.panel{display:grid;gap:16px}
 .review .o{color:var(--ok);font-weight:700} .review .xx{color:var(--bad);font-weight:700}
 .review .ans{color:var(--ok);font-weight:700}
 .stack{display:grid;gap:16px}
+/* 게스트에게 보이는 필라장의 인사 */
+.card.letter{background:var(--sky);border-color:transparent;color:var(--on-sky);gap:12px;padding:24px 22px}
+.letter small{font-size:.85rem;font-weight:700}
+.letter small b{color:var(--lime)}
+.letter p{font-family:var(--f-head);font-size:1.05rem;line-height:1.85;text-wrap:pretty}
+.letter .ps{font-family:var(--f-body);font-size:.9rem;opacity:.95;padding-top:10px;border-top:1px solid rgba(255,255,255,.35)}
 /* 필라장의 메시지 (모든 단원·암송·약어를 한 번씩 마치면) */
 .overlay.done{z-index:60;background:rgba(8,30,46,.55);display:grid;place-items:center;padding:16px}
 .done-card{max-width:420px;width:100%;background:var(--sky);color:var(--on-sky);border-radius:24px;padding:30px 24px 24px;display:grid;gap:14px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.25)}
@@ -236,7 +242,17 @@ section.panel{display:grid;gap:16px}
 <main class="wrap">
   <!-- 나무필라 연습게임 -->
   <section class="panel" id="game">
-    <div class="card hero">
+    <div class="card letter" id="guest-letter" hidden>
+      <small><b>필라장</b>의 인사</small>
+      <p>안녕하세요! 나무필라 필라장 임채은입니다 🌳</p>
+      <p>이 웹앱은 시험기간과 입시, 군대 등 각자의 자리에서 바쁜 시기를 보내고 있는 우리 필라원들을 위해 만들어졌습니다.</p>
+      <p>어떤 경로로 이 링크를 공유받으셨는지는 모르겠지만, 이렇게 만나 뵙게 되어 반갑습니다!</p>
+      <p>필라장으로서 우리 필라원들이 바챔에서 높은 랭킹에 올랐으면 하는 마음도 있습니다. 아무래도 상품이 걸려 있다 보니 말이죠 ㅎㅎ 😆</p>
+      <p>하지만 바챔의 진짜 목적은 함께 성경을 읽고 공부하는 데 있다고 생각합니다. 이 링크를 통해 함께 말씀을 나누고, 성경을 통해 하나님을 조금 더 알아가는 작은 기회를 얻으셨으면 좋겠습니다.</p>
+      <p>바쁜 일상 속에서도 말씀을 가까이하는 우리가 되길 바랍니다! 🙏</p>
+      <p class="ps">P.S. 가능하면 실명으로 참여해 주세요! 😊</p>
+    </div>
+    <div class="card hero" id="activity">
       <h2>10/18 나무필라 활동</h2>
       <p>10월 25일 바이블 챔피언십을 앞두고, 오늘은 출제 범위의 첫 부분인 <b>1단원 아브라함</b>(창세기 12–25장)을 함께 공부하고 연습게임으로 실력을 겨뤄 봐요.</p>
       <ol class="steps">
@@ -249,7 +265,7 @@ section.panel{display:grid;gap:16px}
     </div>
     <div class="card">
       <div class="row"><h2>나무필라 연습게임</h2><span class="muted num">12 Q</span></div>
-      <p class="muted">1단원 요약에서 10문제, 암송 구절에서 2문제가 나와요. 많이 맞힌 순서로, 같으면 빨리 푼 순서로 순위가 정해져요.</p>
+      <p class="muted">1단원 요약에서 10문제, 암송 구절에서 2문제가 나와요. 많이 맞출 수록 빨리 풀 수록 높은 랭킹이예요.</p>
       <button class="btn primary big" id="start-game" type="button">게임 시작</button>
       <p class="note" id="game-note">랭킹에는 첫 번째 기록만 올라가요.</p>
     </div>
@@ -374,7 +390,7 @@ section.panel{display:grid;gap:16px}
 <div class="overlay done" id="done" hidden role="dialog" aria-modal="true" aria-labelledby="done-title">
   <div class="done-card">
     <small><b>필라장</b>의 메시지</small>
-    <h2 id="done-title">모든 단원과 암송·약어를 다 해봤어요!</h2>
+    <h2 id="done-title">모든 단원, 암송, 약어 문제를 다 풀어보셨네요!</h2>
     <p class="done-msg">시험기간, 입시기간, 군대 등 각자의 사정으로 바쁠텐데 열심히 참여하고 공부해줘서 고마워요😊 남은 시간동안 열심히 공부해보아요! 파이팅!!</p>
     <button class="btn big" id="done-ok" type="button">고마워요</button>
   </div>
@@ -418,7 +434,7 @@ section.panel{display:grid;gap:16px}
   </div>
 </div>
 
-<script src="data.js?v=202610180336"></script>
-<script src="app.js?v=202610180336"></script>
+<script src="data.js?v=202610180349"></script>
+<script src="app.js?v=202610180349"></script>
 </body>
 </html>
