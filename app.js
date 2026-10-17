@@ -72,7 +72,7 @@
   /* ---------- 이름 고르기 ---------- */
   let pending = null, picked = null;   // picked: { name } 또는 { guest: true }
   function openOverlay(id) { $(id).hidden = false; document.body.style.overflow = "hidden"; }
-  function closeOverlay(id) { $(id).hidden = true; if ($("#login").hidden && $("#runner").hidden) document.body.style.overflow = ""; }
+  function closeOverlay(id) { $(id).hidden = true; if ($("#login").hidden && $("#runner").hidden && $("#done").hidden) document.body.style.overflow = ""; }
   const memberNames = () => roster ? roster.map(m => m.name) : MEMBERS;
   let rosterState = "idle";
 
@@ -119,6 +119,8 @@
   }
   function updateFields() {
     const member = picked && !picked.guest;
+    // 이름(또는 게스트)을 고르면 목록은 접고, 이름 칸을 다시 누르면 펼쳐요
+    $("#name-list").hidden = !!picked;
     $("#guest-field").hidden = !(picked && picked.guest);
     $("#pin-field").hidden = !(member && API);
     if (member && API) {
@@ -131,6 +133,9 @@
       $("#pin2-wrap").hidden = !first;
     }
   }
+  const openList = () => { if ($("#name-list").hidden) { renderNames(""); $("#name-list").hidden = false; } };
+  $("#name-in").addEventListener("focus", openList);
+  $("#name-in").addEventListener("click", openList);
   $("#name-in").addEventListener("input", () => {
     const v = $("#name-in").value.trim(), exact = memberNames().find(n => n === v);
     picked = exact ? { name: exact } : null;
@@ -226,7 +231,7 @@
     if (!API || !user || user.guest || !user.token) return;
     try {
       const r = await apiGet({ action: "history", name: user.name, token: user.token });
-      if (r.ok) { serverHist = r.history; refreshCharts(); }
+      if (r.ok) { serverHist = r.history; refreshCharts(); checkAllDone(); }
     } catch {}
   }
   function attemptsFor(label) {
@@ -424,7 +429,7 @@
     }
     clearInterval(timer); RUN = null; closeOverlay("#runner");
   });
-  $("#r-done").addEventListener("click", () => { clearInterval(timer); const k = RUN && RUN.kind; RUN = null; closeOverlay("#runner"); if (k === "game") loadRanking(); else refreshCharts(); });
+  $("#r-done").addEventListener("click", () => { clearInterval(timer); const k = RUN && RUN.kind; RUN = null; closeOverlay("#runner"); if (k === "game") loadRanking(); else refreshCharts(); checkAllDone(); });
   $("#r-again").addEventListener("click", () => start(RUN ? RUN.kind : "unit"));
 
   async function finish() {
@@ -550,6 +555,18 @@
   $("#start-wrong").addEventListener("click", () => start("wrong"));
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#login").hidden) { pending = null; closeOverlay("#login"); } });
 
+  /* ---------- 필라장의 메시지: 5단원 + 암송 + 약어를 모두 한 번씩 풀면 한 번 띄워요 ---------- */
+  const REQUIRED = [...UNITS.map(u => u.label), "암송 구절", "성경 약어"];
+  function checkAllDone() {
+    if (!user || !$("#runner").hidden || !$("#login").hidden) return;
+    const key = keyFor("done");
+    if (store.get(key, false)) return;
+    if (!REQUIRED.every(l => attemptsFor(l).length > 0)) return;
+    store.set(key, true);
+    openOverlay("#done"); $("#done-ok").focus();
+  }
+  $("#done-ok").addEventListener("click", () => closeOverlay("#done"));
+
   /* ---------- 처음 화면 ---------- */
   setUser(user);
   showTab((location.hash || "").slice(1) || store.get("np-tab", "game"));
@@ -558,5 +575,5 @@
     history.replaceState(null, "", location.pathname + location.search);
     window.addEventListener("load", () => window.scrollTo(0, 0));
   }
-  if (!user) openLogin();
+  if (!user) openLogin(); else checkAllDone();
 })();
