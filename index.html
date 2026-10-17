@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>나무필라 바이블 챔피언십</title>
+<meta name="description" content="나무필라 소모임의 바이블 챔피언십 준비: 창세기 12장–출애굽기 20장, 암송 5구절, 성경 약어">
+<meta name="theme-color" content="#18A8F1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&family=Quicksand:wght@500;600;700&display=swap">
+<style>
+/* 레이아웃: 교회 시그니처처럼 하늘색 헤더(흰 글씨 + 라임 포인트) 아래 흰 카드가 한 줄로 쌓이는 단일 칼럼 */
+:root{
+  --sky:#18A8F1; --sky-ink:#0A6FA8; --sky-soft:#E3F4FD; --lime:#AFFF2A; --on-sky:#FFFFFF;
+  --bg:#F3F9FD; --surface:#FFFFFF; --sunk:#EAF3F9; --fg:#11293A; --muted:#587184; --line:#D7E8F3;
+  --ok:#1E8A4F; --ok-soft:#DEF5E7; --bad:#C2413B; --bad-soft:#FBE4E2;
+  --gold:#D79A00; --silver:#8796A3; --bronze:#B06A35;
+  --f-head:"Gowun Dodum","Noto Sans KR",sans-serif;
+  --f-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"Quicksand","Noto Sans KR",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --sky:#1597DA; --sky-ink:#6CCBFA; --sky-soft:#12344A; --on-sky:#FFFFFF;
+  --bg:#0A1822; --surface:#10222F; --sunk:#16303F; --fg:#E4F1F9; --muted:#8FAABD; --line:#1F3B4E;
+  --ok:#5FD08F; --ok-soft:#143526; --bad:#F2867F; --bad-soft:#3A1C1C;
+  --gold:#F2BE3B; --silver:#B5C2CC; --bronze:#DE955D; color-scheme:dark}}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.65;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:var(--f-head);font-weight:400;margin:0;line-height:1.35;text-wrap:balance}
+h2{font-size:1.4rem} h3{font-size:1.1rem}
+p{margin:0}
+a{color:var(--sky-ink)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+.num{font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px}
+
+/* 헤더 */
+header.top{background:var(--sky);color:var(--on-sky);padding-top:env(safe-area-inset-top,0px)}
+.brand{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:20px 8px}
+.logo{font-family:var(--f-head);font-size:clamp(2.1rem,9vw,2.9rem);line-height:1;letter-spacing:-.01em}
+.logo .namu{color:var(--lime)}
+.sub{font-size:.88rem;opacity:.95;margin-top:6px}
+.who-btn{border:1.5px solid rgba(255,255,255,.7);background:transparent;color:var(--on-sky);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.88rem;cursor:pointer;white-space:nowrap}
+.who-btn:hover{background:rgba(255,255,255,.15)}
+nav.tabs{position:sticky;top:0;z-index:20;background:var(--sky);padding-top:env(safe-area-inset-top,0px)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:4px 10px}
+nav.tabs button{flex:1 0 auto;border:0;background:transparent;color:var(--on-sky);font-weight:700;font-size:.95rem;padding:9px 12px;border-radius:999px;cursor:pointer;opacity:.9}
+nav.tabs button[aria-selected="true"]{background:var(--on-sky);color:#0A6FA8;opacity:1}
+nav.tabs .short{display:none}
+@media (max-width:520px){nav.tabs .long{display:none} nav.tabs .short{display:inline} nav.tabs button{padding:8px 10px;font-size:.9rem}}
+
+main{padding-block:20px 72px}
+section.panel{display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:14px;min-width:0}
+.card.hero{background:var(--sky-soft);border-color:transparent}
+.eyebrow{font-family:var(--f-num);font-weight:700;font-size:.78rem;letter-spacing:.08em;color:var(--sky-ink);text-transform:uppercase}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.btn{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{border-color:var(--sky)}
+.btn.primary{background:var(--sky);border-color:var(--sky);color:var(--on-sky)}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.big{padding:15px 20px;font-size:1.08rem;width:100%}
+.btn.small{padding:6px 12px;font-size:.85rem;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.note{font-size:.88rem;padding:10px 14px;border-radius:12px;background:var(--sunk);color:var(--muted)}
+
+/* 진행 순서 */
+.steps{list-style:none;margin:0;padding:0;display:grid}
+.steps li{display:grid;grid-template-columns:78px 1fr;gap:12px;padding-block:10px;border-top:1px dashed var(--line)}
+.steps li:first-child{border-top:0}
+.steps .t{font-family:var(--f-num);font-weight:700;color:var(--sky-ink);font-variant-numeric:tabular-nums}
+
+/* 랭킹 */
+.board{list-style:none;margin:0;padding:0;display:grid}
+.board li{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;padding-block:11px;border-top:1px solid var(--line)}
+.board li:first-child{border-top:0}
+.board li.me{background:var(--sky-soft);border-radius:12px;padding-inline:8px;margin-inline:-8px}
+.rank{font-family:var(--f-num);font-weight:700;font-size:1.3rem;text-align:center;color:var(--muted)}
+.rank.r1{color:var(--gold)} .rank.r2{color:var(--silver)} .rank.r3{color:var(--bronze)}
+.bname{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.bname small{font-weight:400;color:var(--muted);margin-left:6px}
+.bpts{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;line-height:1.3}
+.bpts b{font-size:1.15rem}
+.bpts span{display:block;font-size:.82rem;color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding-block:20px}
+
+/* 단원 */
+.unit-pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.unit-pills button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer;color:var(--fg)}
+.unit-pills button[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:var(--on-sky)}
+.unit-pills .n{font-family:var(--f-num)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.84rem;padding:3px 11px;border-radius:999px;background:var(--sunk)}
+.scenes{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.scenes li{display:grid;grid-template-columns:62px 1fr;gap:12px;padding-block:12px;border-top:1px solid var(--line)}
+.scenes li:first-child{border-top:0;padding-top:0}
+.scenes .ch{font-family:var(--f-num);font-weight:700;color:var(--sky-ink);font-size:.9rem;padding-top:2px}
+.scenes b{display:block;font-family:var(--f-head);font-weight:400;font-size:1.05rem}
+.chapters{display:flex;flex-wrap:wrap;gap:6px}
+.chapters a{min-width:44px;text-align:center;padding:7px 10px;border-radius:10px;border:1.5px solid var(--line);text-decoration:none;font-family:var(--f-num);font-weight:700;color:var(--fg)}
+.chapters a:hover{border-color:var(--sky);color:var(--sky-ink)}
+
+/* 암송 */
+.verse{display:grid;gap:6px;padding:14px 16px;border-radius:14px;background:var(--sky-soft)}
+.verse .ref{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.verse .ref strong{font-family:var(--f-head);font-weight:400;font-size:1.08rem;color:var(--sky-ink)}
+.verse .ref span{font-size:.84rem;color:var(--muted)}
+.verse q{quotes:none;font-family:var(--f-head);font-size:1.08rem;line-height:1.8;cursor:pointer;transition:filter .2s}
+.hide-verses .verse q{filter:blur(7px);user-select:none}
+.hide-verses .verse q.peek{filter:none}
+.verses{display:grid;gap:10px}
+.abbr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.abbr{border:0;background:var(--sunk);border-radius:10px;padding:7px 9px;display:grid;text-align:left;cursor:pointer;min-width:0}
+.abbr b{font-family:var(--f-head);font-weight:400;font-size:1.1rem}
+.abbr span{font-size:.78rem;color:var(--muted);overflow-wrap:anywhere}
+.hide-abbr .abbr span{visibility:hidden}
+.hide-abbr .abbr.peek span{visibility:visible}
+.testament{font-size:.85rem;font-weight:700;color:var(--muted)}
+
+/* 그래프와 한마디 */
+.chart-box{position:relative;min-width:0}
+.chart-box svg{display:block;width:100%;height:auto;overflow:visible}
+.chart-tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font-size:.8rem;padding:5px 9px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-115%)}
+.cheer{display:grid;gap:4px;padding:14px 16px;border-radius:14px;background:var(--sky);color:var(--on-sky)}
+.cheer small{font-size:.8rem;opacity:.95}
+.cheer small b{color:var(--lime);font-weight:700}
+.cheer p{font-family:var(--f-head);font-size:1.15rem}
+.hist-text{font-size:.82rem;color:var(--muted)}
+
+/* 오답 */
+.wrong-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.wrong-list li{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:12px 14px;border-radius:12px;background:var(--sunk)}
+.wrong-list .wq{font-size:.95rem}
+.wrong-list .wa{font-size:.88rem;color:var(--ok);font-weight:700;margin-top:3px}
+.wrong-list .wm{font-size:.78rem;color:var(--muted)}
+.group-title{font-weight:700;font-size:.92rem;color:var(--sky-ink);margin-top:6px}
+
+/* 덮개(로그인, 퀴즈) */
+.overlay{position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.overlay .wrap{padding-block:16px 40px;display:grid;gap:16px}
+.ov-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.x{border:0;background:var(--sunk);width:40px;height:40px;border-radius:50%;font-size:1.3rem;cursor:pointer;line-height:1}
+.members{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.members button{border:1.5px solid var(--line);background:var(--surface);padding:14px 6px;border-radius:14px;font-family:var(--f-head);font-size:1.15rem;cursor:pointer;color:var(--fg)}
+.members button:hover,.members button[aria-pressed="true"]{border-color:var(--sky);background:var(--sky-soft)}
+.members button.guest{font-family:var(--f-body);font-size:.95rem;color:var(--muted)}
+.pin{font-family:var(--f-num);font-size:1.6rem;letter-spacing:.5em;text-align:center;width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
+.field{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
+.text-in{font:inherit;width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
+.msg{font-size:.9rem;min-height:1.4em}
+.msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
+
+.qmeta{display:flex;justify-content:space-between;font-family:var(--f-num);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sky);border-radius:99px;transition:width .25s}
+.qtext{font-family:var(--f-head);font-size:1.3rem;line-height:1.6}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-size:1rem;color:var(--fg)}
+.opt:hover:not(:disabled){border-color:var(--sky)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{font-weight:700;min-height:1.6em}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--bad)}
+.score-big{font-family:var(--f-num);font-weight:700;font-size:3.4rem;line-height:1}
+.score-big small{font-size:1.3rem;color:var(--muted)}
+.review{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.review li{display:grid;grid-template-columns:24px 1fr;gap:8px;font-size:.92rem}
+.review .o{color:var(--ok);font-weight:700} .review .xx{color:var(--bad);font-weight:700}
+.review .ans{color:var(--ok);font-weight:700}
+.stack{display:grid;gap:16px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap brand">
+    <div>
+      <div class="logo"><span class="namu">나무</span>필라</div>
+      <p class="sub">바이블 챔피언십 준비 · <span class="num">10.25</span></p>
+    </div>
+    <button class="who-btn" id="who-btn" type="button">이름 고르기</button>
+  </div>
+</header>
+<nav class="tabs" aria-label="메뉴">
+  <div class="wrap" role="tablist">
+    <button role="tab" id="tab-game" data-tab="game" aria-selected="true"><span class="long">나무필라 연습게임</span><span class="short">연습게임</span></button>
+    <button role="tab" id="tab-unit" data-tab="unit" aria-selected="false">단원 공부</button>
+    <button role="tab" id="tab-memo" data-tab="memo" aria-selected="false">암송·약어</button>
+    <button role="tab" id="tab-wrong" data-tab="wrong" aria-selected="false">오답 노트</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <!-- 나무필라 연습게임 -->
+  <section class="panel" id="game">
+    <div class="card hero">
+      <span class="eyebrow">Today · 15 min</span>
+      <h2>오늘 나무필라 순서</h2>
+      <ol class="steps">
+        <li><span class="t">0–2분</span><span>링크 열고 <b>내 이름 고르기</b>, 숫자 4자리 정하기</span></li>
+        <li><span class="t">2–7분</span><span><b>1단원 아브라함</b> 요약 함께 읽기 <button class="btn small" id="go-unit1" type="button">1단원 열기</button></span></li>
+        <li><span class="t">7–12분</span><span>연습게임 12문제. 모두 같은 문제예요</span></li>
+        <li><span class="t">12–15분</span><span>랭킹 발표와 시상</span></li>
+      </ol>
+    </div>
+    <div class="card">
+      <div class="row"><h2>나무필라 연습게임</h2><span class="muted num">12 Q</span></div>
+      <p class="muted">1단원 요약에서 10문제, 암송 구절에서 2문제가 나와요. 많이 맞힌 순서로, 같으면 빨리 푼 순서로 순위가 정해져요.</p>
+      <button class="btn primary big" id="start-game" type="button">게임 시작</button>
+      <p class="note" id="game-note">랭킹에는 첫 번째 기록만 올라가요.</p>
+    </div>
+    <div class="card">
+      <div class="row"><h2>랭킹</h2><button class="btn small" id="refresh-rank" type="button">새로고침</button></div>
+      <ul class="board" id="board"><li class="empty">랭킹을 불러오는 중이에요…</li></ul>
+      <p class="note" id="rank-note" hidden></p>
+    </div>
+  </section>
+
+  <!-- 단원 공부 -->
+  <section class="panel" id="unit" hidden>
+    <div class="unit-pills" id="unit-pills" role="group" aria-label="단원 고르기"></div>
+    <div class="card hero">
+      <span class="eyebrow" id="u-range"></span>
+      <h2 id="u-title"></h2>
+      <p id="u-lead"></p>
+      <div class="chips" id="u-keys"></div>
+    </div>
+    <div class="card" id="u-verse-card">
+      <h3>이 단원의 암송 구절</h3>
+      <div class="verses" id="u-verses"></div>
+    </div>
+    <div class="card">
+      <h3>장면별 요약</h3>
+      <ul class="scenes" id="u-scenes"></ul>
+    </div>
+    <div class="card">
+      <h3>성경 본문 읽기</h3>
+      <p class="muted" style="font-size:.9rem">장 번호를 누르면 대한성서공회 개역개정 본문이 새 창으로 열려요.</p>
+      <div class="chapters" id="u-chapters"></div>
+    </div>
+    <div class="card">
+      <div class="row"><h3>단원 퀴즈</h3><span class="muted num">10 Q</span></div>
+      <p class="muted" style="font-size:.9rem">풀 때마다 문제가 바뀌어요. 여러 번 풀면 점수가 어떻게 변하는지 그래프로 볼 수 있어요.</p>
+      <button class="btn primary big" id="start-unit" type="button">단원 퀴즈 풀기</button>
+      <div class="chart-box" id="chart-box"></div>
+      <p class="hist-text" id="hist-text"></p>
+      <div class="cheer" id="cheer">
+        <small><b>필라장</b>이 필라원에게 해주는 한마디</small>
+        <p id="cheer-text"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 암송·약어 -->
+  <section class="panel" id="memo" hidden>
+    <div class="card" id="verse-card">
+      <div class="row"><h2>필수 암송 5구절</h2><button class="btn small" id="toggle-verses" type="button" aria-pressed="false">가리기</button></div>
+      <p class="muted" style="font-size:.9rem">개역개정 본문이에요. 가리기를 켠 뒤 구절을 누르면 잠깐 보여요.</p>
+      <div class="verses" id="all-verses"></div>
+      <button class="btn primary big" id="start-verse" type="button">암송 퀴즈 풀기</button>
+    </div>
+    <div class="card" id="abbr-card">
+      <div class="row"><h2>성경 약어 66권</h2><button class="btn small" id="toggle-abbr" type="button" aria-pressed="false">책 이름 가리기</button></div>
+      <span class="testament">구약 39권</span>
+      <div class="abbr-grid" id="abbr-ot"></div>
+      <span class="testament">신약 27권</span>
+      <div class="abbr-grid" id="abbr-nt"></div>
+      <button class="btn primary big" id="start-abbr" type="button">약어 퀴즈 풀기</button>
+    </div>
+  </section>
+
+  <!-- 오답 노트 -->
+  <section class="panel" id="wrong" hidden>
+    <div class="card">
+      <div class="row"><h2>오답 노트</h2><span class="num muted" id="wrong-count"></span></div>
+      <p class="muted" style="font-size:.9rem">틀린 문제가 여기에 모여요. 다시 풀어서 맞히면 노트에서 빠져요.</p>
+      <button class="btn primary big" id="start-wrong" type="button">오답 다시 풀기</button>
+      <div id="wrong-groups"></div>
+    </div>
+  </section>
+</main>
+
+<!-- 이름 고르기 -->
+<div class="overlay" id="login" hidden role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="wrap">
+    <div class="ov-head"><h2 id="login-title">나는 누구일까요?</h2><button class="x" id="login-close" type="button" aria-label="닫기">×</button></div>
+    <div id="step-name" class="card">
+      <p class="muted">내 이름을 눌러주세요.</p>
+      <div class="members" id="members"></div>
+    </div>
+    <div id="step-pin" class="card" hidden>
+      <h3 id="pin-title"></h3>
+      <p class="muted" id="pin-help"></p>
+      <label class="field" for="pin1"><span id="pin1-label">숫자 4자리</span><input class="pin" id="pin1" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+      <label class="field" for="pin2" id="pin2-wrap" hidden>한 번 더 입력<input class="pin" id="pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+      <p class="msg" id="pin-msg" aria-live="polite"></p>
+      <div class="row"><button class="btn" id="pin-back" type="button">이름 다시 고르기</button><button class="btn primary" id="pin-ok" type="button">확인</button></div>
+    </div>
+    <div id="step-guest" class="card" hidden>
+      <h3>손님으로 참여하기</h3>
+      <label class="field" for="guest-name">이름<input class="text-in" id="guest-name" maxlength="10" placeholder="예: 김방문"></label>
+      <p class="msg" id="guest-msg" aria-live="polite"></p>
+      <div class="row"><button class="btn" id="guest-back" type="button">이름 다시 고르기</button><button class="btn primary" id="guest-ok" type="button">확인</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 퀴즈 -->
+<div class="overlay" id="runner" hidden role="dialog" aria-modal="true" aria-labelledby="run-mode">
+  <div class="wrap">
+    <div class="ov-head"><h3 id="run-mode"></h3><button class="x" id="run-close" type="button" aria-label="그만 풀기">×</button></div>
+    <div id="run-q" class="card">
+      <div class="qmeta"><span id="q-count"></span><span id="q-timer">00:00</span></div>
+      <div class="bar"><i id="q-bar"></i></div>
+      <p class="qtext" id="q-text"></p>
+      <div class="opts" id="q-opts"></div>
+      <p class="fb" id="q-fb" aria-live="polite"></p>
+      <div class="row"><span class="muted" id="q-ref"></span><button class="btn primary" id="q-next" type="button" hidden>다음</button></div>
+    </div>
+    <div id="run-result" class="stack" hidden>
+      <div class="card">
+        <div class="row">
+          <p class="score-big"><span id="r-score"></span><small> / <span id="r-total"></span></small></p>
+          <p style="text-align:right"><span class="muted" style="font-size:.85rem">걸린 시간</span><br><span class="num" style="font-size:1.4rem" id="r-time"></span></p>
+        </div>
+        <p class="note" id="r-note" aria-live="polite"></p>
+      </div>
+      <div class="cheer" id="r-cheer" hidden>
+        <small><b>필라장</b>이 필라원에게 해주는 한마디</small>
+        <p id="r-cheer-text"></p>
+      </div>
+      <div class="card">
+        <h3>복습</h3>
+        <ul class="review" id="r-review"></ul>
+      </div>
+      <div class="row"><button class="btn" id="r-done" type="button">닫기</button><button class="btn primary" id="r-again" type="button">다시 풀기</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
