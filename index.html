@@ -104,7 +104,8 @@ section.panel{display:grid;gap:16px}
 .unit-pills button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer;color:var(--fg)}
 .unit-pills button[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:var(--on-sky)}
 .unit-pills button{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px}
-.unit-pills .n{font-family:var(--f-num);font-weight:700;width:26px;height:26px;border-radius:50%;background:var(--lime);color:#11293A;display:inline-grid;place-items:center;font-size:.9rem}
+.unit-pills .n{font-family:var(--f-num);font-weight:700;width:26px;height:26px;border-radius:50%;background:var(--sky);color:#FFFFFF;display:inline-grid;place-items:center;font-size:.9rem}
+.unit-pills button[aria-pressed="true"] .n{background:#FFFFFF;color:#0A6FA8}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:.84rem;padding:3px 11px;border-radius:999px;background:var(--sunk)}
 .scenes{list-style:none;margin:0;padding:0;display:grid;gap:0}
@@ -293,6 +294,12 @@ section.panel{display:grid;gap:16px}
       <p class="muted" style="font-size:.9rem">구절을 누르면 내용이 보입니다.</p>
       <div class="verses" id="all-verses"></div>
       <button class="btn primary big" id="start-verse" type="button">암송 퀴즈 풀기</button>
+      <div class="chart-box" id="chart-box-verse"></div>
+      <p class="hist-text" id="hist-text-verse"></p>
+      <div class="cheer" id="cheer-verse" hidden>
+        <small><b>필라장</b>이 필라원에게 해주는 한마디</small>
+        <p id="cheer-text-verse"></p>
+      </div>
     </div>
     <div class="card" id="abbr-card">
       <div class="row"><h2>성경 약어 66권</h2><button class="btn small" id="toggle-abbr" type="button" aria-pressed="false">책 이름 가리기</button></div>
@@ -301,6 +308,12 @@ section.panel{display:grid;gap:16px}
       <span class="testament">신약 27권</span>
       <div class="abbr-grid" id="abbr-nt"></div>
       <button class="btn primary big" id="start-abbr" type="button">약어 퀴즈 풀기</button>
+      <div class="chart-box" id="chart-box-abbr"></div>
+      <p class="hist-text" id="hist-text-abbr"></p>
+      <div class="cheer" id="cheer-abbr" hidden>
+        <small><b>필라장</b>이 필라원에게 해주는 한마디</small>
+        <p id="cheer-text-abbr"></p>
+      </div>
     </div>
   </section>
 

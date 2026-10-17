@@ -174,6 +174,7 @@
     TABS.forEach(n => { $("#" + n).hidden = n !== t; $("#tab-" + n).setAttribute("aria-selected", String(n === t)); });
     store.set("np-tab", t);
     if (t === "unit") renderUnit(curUnit);
+    if (t === "memo") renderMemoCharts();
     if (t === "wrong") renderWrong();
     if (t === "game") loadRanking();
   }
@@ -225,7 +226,7 @@
     if (!API || !user || user.guest || !user.token) return;
     try {
       const r = await apiGet({ action: "history", name: user.name, token: user.token });
-      if (r.ok) { serverHist = r.history; if (!$("#unit").hidden) renderChart(unitOf(curUnit)); }
+      if (r.ok) { serverHist = r.history; refreshCharts(); }
     } catch {}
   }
   function attemptsFor(label) {
@@ -245,17 +246,17 @@
     return slope > 0 ? "up" : "down";
   }
   const svgEl = (tag, attrs) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
-  function renderChart(u) {
-    const box = $("#chart-box"); box.replaceChildren();
+  function renderChart(u, sfx = "") {
+    const box = $("#chart-box" + sfx); box.replaceChildren();
     const data = attemptsFor(u.label);
     const pts = data.map(d => pct(d.score, d.total));
     if (!data.length) {
-      box.append(el("p", "empty", "아직 푼 기록이 없어요. 단원 퀴즈를 풀면 여기에 점수 그래프가 생겨요."));
-      $("#hist-text").textContent = ""; $("#cheer").hidden = true; return;
+      box.append(el("p", "empty", "아직 푼 기록이 없어요. 퀴즈를 풀면 여기에 점수 그래프가 생겨요."));
+      $("#hist-text" + sfx).textContent = ""; $("#cheer" + sfx).hidden = true; return;
     }
-    $("#cheer").hidden = false;
-    $("#cheer-text").textContent = CHEERS[trend(pts)];
-    $("#hist-text").textContent = "회차별 점수: " + pts.map(p => p + "%").join(" → ");
+    $("#cheer" + sfx).hidden = false;
+    $("#cheer-text" + sfx).textContent = CHEERS[trend(pts)];
+    $("#hist-text" + sfx).textContent = "회차별 점수: " + pts.map(p => p + "%").join(" → ");
 
     const W = Math.max(280, box.clientWidth || 600), H = 190, L = 40, R = 18, T = 22, B = 30;
     const iw = W - L - R, ih = H - T - B;
@@ -293,7 +294,10 @@
     svg.addEventListener("pointerleave", () => tip.hidden = true);
     box.append(svg, tip);
   }
-  let rsz; window.addEventListener("resize", () => { clearTimeout(rsz); rsz = setTimeout(() => { if (!$("#unit").hidden) renderChart(unitOf(curUnit)); }, 150); });
+  // 암송·약어 탭 그래프
+  function renderMemoCharts() { renderChart({ label: "암송 구절" }, "-verse"); renderChart({ label: "성경 약어" }, "-abbr"); }
+  function refreshCharts() { if (!$("#unit").hidden) renderChart(unitOf(curUnit)); if (!$("#memo").hidden) renderMemoCharts(); }
+  let rsz; window.addEventListener("resize", () => { clearTimeout(rsz); rsz = setTimeout(refreshCharts, 150); });
 
   /* ---------- 암송·약어 ---------- */
   $("#all-verses").replaceChildren(...VERSES.map(verseBox));
@@ -420,7 +424,7 @@
     }
     clearInterval(timer); RUN = null; closeOverlay("#runner");
   });
-  $("#r-done").addEventListener("click", () => { clearInterval(timer); const k = RUN && RUN.kind; RUN = null; closeOverlay("#runner"); if (k === "unit") renderChart(unitOf(curUnit)); if (k === "game") loadRanking(); });
+  $("#r-done").addEventListener("click", () => { clearInterval(timer); const k = RUN && RUN.kind; RUN = null; closeOverlay("#runner"); if (k === "game") loadRanking(); else refreshCharts(); });
   $("#r-again").addEventListener("click", () => start(RUN ? RUN.kind : "unit"));
 
   async function finish() {
@@ -450,8 +454,9 @@
     renderWrong();
 
     const cheer = $("#r-cheer");
-    cheer.hidden = RUN.kind !== "unit";
-    if (RUN.kind === "unit") $("#r-cheer-text").textContent = CHEERS[trend(attemptsFor(RUN.label).map(d => pct(d.score, d.total)))];
+    const charted = ["unit", "verse", "abbr"].includes(RUN.kind);
+    cheer.hidden = !charted;
+    if (charted) $("#r-cheer-text").textContent = CHEERS[trend(attemptsFor(RUN.label).map(d => pct(d.score, d.total)))];
 
     const note = $("#r-note");
     note.textContent = RUN.kind === "game" ? "랭킹에 올리는 중…" : (API ? "기록을 저장하는 중…" : "이 기기에 기록했어요.");
