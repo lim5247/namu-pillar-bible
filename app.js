@@ -55,7 +55,7 @@
 
   /* ---------- 사용자 ---------- */
   let user = store.get("np-user", null);
-  let roster = null;
+  let roster = API ? store.get("np-roster", null) : null;
   const keyFor = k => "np-" + k + ":" + (user ? (user.guest ? "손님 " : "") + user.name : "-");
   const myHist = () => store.get(keyFor("hist"), []);
   const myWrong = () => store.get(keyFor("wrong"), {});
@@ -98,12 +98,22 @@
     setMsg("");
     renderNames(""); updateFields();
     openOverlay("#login"); $("#login").scrollTop = 0;
-    if (API && !roster) {
-      rosterState = "loading"; renderNames("");
-      try { const r = await apiGet({ action: "roster" }); if (!r.ok) throw 0; roster = r.members; rosterState = "ok"; }
-      catch { rosterState = "fail"; }
-      renderNames($("#name-in").value.trim()); updateFields();
-    }
+    refreshRoster();
+  }
+  // 서버가 느려서(요청마다 2초쯤) 명단은 기기에 기억해 두고 바로 보여준 뒤, 뒤에서 최신으로 바꿔요
+  let rosterReq = null;
+  function refreshRoster() {
+    if (!API) return Promise.resolve();
+    if (rosterReq) return rosterReq;
+    if (!roster) rosterState = "loading";
+    rosterReq = apiGet({ action: "roster" })
+      .then(r => { if (!r.ok) throw 0; roster = r.members; store.set("np-roster", roster); rosterState = "ok"; })
+      .catch(() => { if (!roster) rosterState = "fail"; })
+      .finally(() => {
+        rosterReq = null;
+        if (!$("#login").hidden) { renderNames(picked ? "" : $("#name-in").value.trim()); updateFields(); }
+      });
+    return rosterReq;
   }
   function setMsg(t, bad) { const m = $("#login-msg"); m.textContent = t; m.className = "msg" + (bad ? " bad" : ""); }
   function option(label, sel, onPick, cls) {
@@ -535,7 +545,9 @@
       $("#rank-note").hidden = false;
       $("#rank-note").textContent = "기록 서버가 아직 연결되지 않아 이 기기의 기록만 보여요. (설정 안내서 3단계)";
     } else {
-      try { const r = await apiGet({ action: "ranking" }); if (!r.ok) throw 0; rows = r.ranking; $("#rank-note").hidden = true; }
+      // 지난번 랭킹을 먼저 보여주고, 서버 응답이 오면 바꿔요
+      if (!lastRows) { const c = store.get("np-rank", null); if (c) { lastRows = c; renderBoard(c); renderGameNote(); } }
+      try { const r = await apiGet({ action: "ranking" }); if (!r.ok) throw 0; rows = r.ranking; store.set("np-rank", rows); $("#rank-note").hidden = true; }
       catch { $("#rank-note").hidden = false; $("#rank-note").textContent = "랭킹을 불러오지 못했어요. 새로고침을 눌러주세요."; return lastRows; }
     }
     lastRows = rows; renderBoard(rows); renderGameNote(); return rows;
@@ -582,6 +594,7 @@
   $("#done-ok").addEventListener("click", () => closeOverlay("#done"));
 
   /* ---------- 처음 화면 ---------- */
+  refreshRoster();
   setUser(user);
   showTab((location.hash || "").slice(1) || store.get("np-tab", "game"));
   if (location.hash) {
