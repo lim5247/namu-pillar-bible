@@ -30,17 +30,27 @@
   const QMAP = new Map();
   const mk = ([id, q, a, w, ref], unit) => ({ id, q, a, w, ref, unit });
   Object.entries(QUESTIONS).forEach(([u, list]) => list.forEach(r => QMAP.set(r[0], mk(r, +u))));
-  VERSE_QUESTIONS.forEach(r => QMAP.set(r[0], mk(r, "verse")));
   const ALLBOOKS = [...BOOKS.ot.map(b => [b[0], b[1], "구약"]), ...BOOKS.nt.map(b => [b[0], b[1], "신약"])];
+  // 약어: 직접 입력 (ab-n-창 = 약어 보고 책 이름 쓰기, ab-a-창 = 책 이름 보고 약어 쓰기)
   function abbrQ(id) {
     const m = id.match(/^ab-([na])-(.+)$/); if (!m) return null;
     const b = ALLBOOKS.find(x => x[0] === m[2]); if (!b) return null;
-    const same = shuffle(ALLBOOKS.filter(x => x[2] === b[2] && x[0] !== b[0])).slice(0, 3);
     return m[1] === "n"
-      ? { id, q: `성경 약어 '${b[0]}'는 어떤 책인가요?`, a: b[1], w: same.map(x => x[1]), ref: b[2] + " 성경", unit: "abbr" }
-      : { id, q: `'${b[1]}'의 약어는?`, a: b[0], w: same.map(x => x[0]), ref: b[2] + " 성경", unit: "abbr" };
+      ? { id, type: "sa", q: `약어 '${b[0]}' → 책 이름을 쓰세요`, a: b[1], ref: b[2] + " 성경", unit: "abbr" }
+      : { id, type: "sa", q: `'${b[1]}' → 약어를 쓰세요`, a: b[0], ref: b[2] + " 성경", unit: "abbr" };
   }
-  const getQ = id => id.startsWith("ab-") ? abbrQ(id) : QMAP.get(id);
+  // 암송: vb-v1-0-m (객관식) / vb-v1-0-s (직접 입력)
+  function verseQ(id) {
+    const m = id.match(/^vb-(v\d+)-(\d+)-([ms])$/); if (!m) return null;
+    const v = VERSES.find(x => x.id === m[1]), b = (VERSE_BLANKS[m[1]] || [])[+m[2]];
+    if (!v || !b) return null;
+    const i = v.text.indexOf(b[0]); if (i < 0) return null;
+    const before = v.text.slice(0, i), after = v.text.slice(i + b[0].length);
+    return { id, type: m[3] === "s" ? "sa" : "mc", head: v.ref, parts: [before, after],
+      q: `${v.ref}  ${before}( ____ )${after}`, a: b[0], w: b[1], ref: v.ref, unit: "verse" };
+  }
+  const getQ = id => id.startsWith("ab-") ? abbrQ(id) : id.startsWith("vb-") ? verseQ(id) : QMAP.get(id);
+  const norm = s => String(s || "").replace(/[\s.,'"·]/g, "");
   const unitOf = n => UNITS.find(u => u.no === n);
 
   /* ---------- 사용자 ---------- */
@@ -50,89 +60,112 @@
   const myHist = () => store.get(keyFor("hist"), []);
   const myWrong = () => store.get(keyFor("wrong"), {});
   const rankName = () => user ? (user.guest ? "손님 " + user.name : user.name) : "";
+  const showName = n => n.startsWith("손님 ") ? n.slice(3) + " (게스트)" : n;
   let serverHist = null;
 
   function setUser(u) {
     user = u; store.set("np-user", u); serverHist = null;
-    $("#who-btn").textContent = u ? (u.guest ? "손님 " : "") + u.name + " 님" : "이름 고르기";
+    $("#who-btn").textContent = u ? u.name + (u.guest ? " (게스트)" : " 님") : "이름 고르기";
     renderWrong(); renderUnit(curUnit); renderGameNote(); loadServerHist(); flush();
   }
 
   /* ---------- 이름 고르기 ---------- */
-  let pending = null, picked = null;
+  let pending = null, picked = null;   // picked: { name } 또는 { guest: true }
   function openOverlay(id) { $(id).hidden = false; document.body.style.overflow = "hidden"; }
   function closeOverlay(id) { $(id).hidden = true; if ($("#login").hidden && $("#runner").hidden) document.body.style.overflow = ""; }
+  const memberNames = () => roster ? roster.map(m => m.name) : MEMBERS;
+  let rosterState = "idle";
 
   async function openLogin(then) {
     pending = then || null;
-    showStep("name");
-    openOverlay("#login");
-    renderMembers();
+    picked = user && !user.guest ? { name: user.name } : null;
+    $("#name-in").value = picked ? picked.name : "";
+    ["#guest-name", "#pin1", "#pin2"].forEach(s => $(s).value = "");
+    setMsg("");
+    renderNames(""); updateFields();
+    openOverlay("#login"); $("#login").scrollTop = 0;
     if (API && !roster) {
-      try { const r = await apiGet({ action: "roster" }); if (r.ok) { roster = r.members; renderMembers(); } } catch {}
+      rosterState = "loading"; renderNames("");
+      try { const r = await apiGet({ action: "roster" }); if (!r.ok) throw 0; roster = r.members; rosterState = "ok"; }
+      catch { rosterState = "fail"; }
+      renderNames($("#name-in").value.trim()); updateFields();
     }
   }
-  function showStep(s) { ["name", "pin", "guest"].forEach(n => $("#step-" + n).hidden = n !== s); }
-  function renderMembers() {
-    const box = $("#members"); box.replaceChildren();
-    const names = roster ? roster.map(m => m.name) : MEMBERS;
-    names.forEach(n => {
-      const b = el("button", null, n); b.type = "button";
-      b.setAttribute("aria-pressed", String(!!user && !user.guest && user.name === n));
-      b.addEventListener("click", () => pickMember(n));
-      box.append(b);
-    });
-    const g = el("button", "guest", "손님이에요"); g.type = "button";
-    g.addEventListener("click", () => { showStep("guest"); $("#guest-msg").textContent = ""; $("#guest-name").focus(); });
-    box.append(g);
+  function setMsg(t, bad) { const m = $("#login-msg"); m.textContent = t; m.className = "msg" + (bad ? " bad" : ""); }
+  function option(label, sel, onPick, cls) {
+    const li = el("li"), b = el("button", cls || null, label);
+    b.type = "button"; b.setAttribute("role", "option"); b.setAttribute("aria-selected", String(!!sel));
+    b.addEventListener("click", onPick); li.append(b); return li;
+  }
+  function renderNames(filter) {
+    const f = norm(filter), list = $("#name-list");
+    const all = memberNames(), names = all.filter(n => !f || n.includes(f));
+    list.replaceChildren();
+    if (rosterState === "loading" && !all.length) list.append(el("li", "none", "명단을 불러오는 중이에요…"));
+    else if (rosterState === "fail" && !all.length) list.append(el("li", "none", "명단을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요."));
+    else if (!names.length) list.append(el("li", "none", "명단에 없는 이름이에요. 게스트로 참여할 수 있어요."));
+    names.forEach(n => list.append(option(n, picked && !picked.guest && picked.name === n, () => pickMember(n))));
+    list.append(option("게스트로 참여하기", picked && picked.guest, pickGuest, "guest"));
   }
   function pickMember(name) {
-    picked = name;
-    if (!API) { finishLogin({ name, token: null }); return; }
-    const info = roster && roster.find(m => m.name === name);
-    const first = info ? !info.hasPin : false;
-    $("#pin-title").textContent = name + " 님" + (first ? ", 처음이네요!" : "");
-    $("#pin-help").textContent = first
-      ? "앞으로 쓸 숫자 4자리를 정해주세요. 다른 기기에서 들어올 때 필요해요."
-      : "내가 정한 숫자 4자리를 입력하세요. 잊었다면 필라장에게 말해주세요.";
-    $("#pin1-label").textContent = first ? "새 숫자 4자리" : "숫자 4자리";
-    $("#pin2-wrap").hidden = !first;
-    $("#pin1").value = ""; $("#pin2").value = ""; $("#pin-msg").textContent = ""; $("#pin-msg").className = "msg";
-    showStep("pin"); $("#pin1").focus();
+    picked = { name }; $("#name-in").value = name; setMsg("");
+    renderNames(""); updateFields();
+    const sel = $("#name-list [aria-selected='true']"); if (sel) sel.scrollIntoView({ block: "nearest" });
+    if (!$("#pin-field").hidden) $("#pin1").focus();
   }
-  async function submitPin() {
-    const p1 = $("#pin1").value.trim(), p2 = $("#pin2").value.trim(), msg = $("#pin-msg");
-    msg.className = "msg bad";
-    if (!/^\d{4}$/.test(p1)) { msg.textContent = "숫자 4자리를 입력하세요."; return; }
-    if (!$("#pin2-wrap").hidden && p1 !== p2) { msg.textContent = "두 번 입력한 숫자가 달라요."; return; }
-    msg.className = "msg"; msg.textContent = "확인하는 중…"; $("#pin-ok").disabled = true;
+  function pickGuest() {
+    picked = { guest: true }; $("#name-in").value = "게스트"; setMsg("");
+    renderNames(""); updateFields(); $("#guest-name").focus();
+  }
+  function updateFields() {
+    const member = picked && !picked.guest;
+    $("#guest-field").hidden = !(picked && picked.guest);
+    $("#pin-field").hidden = !(member && API);
+    if (member && API) {
+      const info = roster && roster.find(m => m.name === picked.name);
+      const first = info ? !info.hasPin : false;
+      $("#pin-help").textContent = first
+        ? `${picked.name} 님, 처음이네요! 앞으로 쓸 숫자 4자리를 정해주세요. 다른 기기에서 들어올 때 필요해요.`
+        : `${picked.name} 님, 내가 정한 숫자 4자리를 입력하세요. 잊었다면 필라장에게 말해주세요.`;
+      $("#pin1-label").textContent = first ? "새 숫자 4자리" : "숫자 4자리";
+      $("#pin2-wrap").hidden = !first;
+    }
+  }
+  $("#name-in").addEventListener("input", () => {
+    const v = $("#name-in").value.trim(), exact = memberNames().find(n => n === v);
+    picked = exact ? { name: exact } : null;
+    renderNames(exact ? "" : v); updateFields(); setMsg("");
+  });
+  $("#login-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!picked) { setMsg("명단에서 이름을 고르거나 '게스트로 참여하기'를 눌러주세요.", true); return; }
+    if (picked.guest) {
+      const n = $("#guest-name").value.trim().replace(/^(손님|게스트)\s*/, "");
+      if (!n) { setMsg("게스트 이름을 적어주세요.", true); $("#guest-name").focus(); return; }
+      finishLogin({ name: n, guest: true, token: null }); return;
+    }
+    if (!API) { finishLogin({ name: picked.name, token: null }); return; }
+    const p1 = $("#pin1").value.trim(), p2 = $("#pin2").value.trim();
+    if (!/^\d{4}$/.test(p1)) { setMsg("숫자 4자리를 입력하세요.", true); $("#pin1").focus(); return; }
+    if (!$("#pin2-wrap").hidden && p1 !== p2) { setMsg("두 번 입력한 숫자가 달라요.", true); return; }
+    setMsg("확인하는 중…"); $("#login-ok").disabled = true;
     try {
-      const r = await apiPost({ action: "login", name: picked, pin: p1 });
+      const r = await apiPost({ action: "login", name: picked.name, pin: p1 });
       if (r.ok) {
-        if (roster) roster = roster.map(m => m.name === picked ? { ...m, hasPin: true } : m);
-        finishLogin({ name: picked, token: r.token });
-      } else { msg.className = "msg bad"; msg.textContent = r.error; }
-    } catch { msg.className = "msg bad"; msg.textContent = "인터넷 연결을 확인하고 다시 눌러주세요."; }
-    $("#pin-ok").disabled = false;
-  }
+        if (roster) roster = roster.map(m => m.name === picked.name ? { ...m, hasPin: true } : m);
+        finishLogin({ name: picked.name, token: r.token });
+      } else setMsg(r.error, true);
+    } catch { setMsg("인터넷 연결을 확인하고 다시 눌러주세요.", true); }
+    $("#login-ok").disabled = false;
+  });
   function finishLogin(u) {
     setUser(u); closeOverlay("#login");
     const then = pending; pending = null;
     if (then) then();
   }
-  $("#pin-ok").addEventListener("click", submitPin);
-  ["#pin1", "#pin2"].forEach(s => $(s).addEventListener("keydown", e => { if (e.key === "Enter") submitPin(); }));
-  $("#pin-back").addEventListener("click", () => showStep("name"));
-  $("#guest-back").addEventListener("click", () => showStep("name"));
-  $("#guest-ok").addEventListener("click", () => {
-    const n = $("#guest-name").value.trim().replace(/^손님\s*/, "");
-    if (!n) { $("#guest-msg").className = "msg bad"; $("#guest-msg").textContent = "이름을 적어주세요."; return; }
-    finishLogin({ name: n, guest: true, token: null });
-  });
-  $("#guest-name").addEventListener("keydown", e => { if (e.key === "Enter") $("#guest-ok").click(); });
   $("#login-close").addEventListener("click", () => { pending = null; closeOverlay("#login"); });
   $("#who-btn").addEventListener("click", () => openLogin());
-  const requireUser = fn => user ? fn() : openLogin(fn);
+  const requireUser = fn => user && (user.guest || user.token || !API) ? fn() : openLogin(fn);
 
   /* ---------- 탭 ---------- */
   const TABS = ["game", "unit", "memo", "wrong"];
@@ -156,7 +189,7 @@
   }
   UNITS.forEach(u => {
     const b = el("button"); b.type = "button";
-    b.append(el("span", "n", u.no + " "), document.createTextNode(u.title));
+    b.append(el("span", "n", String(u.no)), document.createTextNode(u.title));
     b.addEventListener("click", () => { curUnit = u.no; store.set("np-unit", u.no); renderUnit(u.no); });
     b.dataset.no = u.no; $("#unit-pills").append(b);
   });
@@ -283,7 +316,7 @@
   /* ---------- 오답 노트 ---------- */
   const GROUPS = [...UNITS.map(u => [u.no, u.label]), ["verse", "암송 구절"], ["abbr", "성경 약어"]];
   function renderWrong() {
-    const notes = Object.values(myWrong());
+    const notes = Object.values(myWrong()).filter(n => getQ(n.id));
     $("#wrong-count").textContent = notes.length ? notes.length + "문제" : "";
     $("#start-wrong").disabled = !notes.length;
     const box = $("#wrong-groups"); box.replaceChildren();
@@ -310,14 +343,20 @@
   const MODES = {
     game: () => ({ label: GAME_LABEL, ids: GAME_IDS.slice() }),
     unit: () => { const u = unitOf(curUnit); return { label: u.label, unit: u, ids: shuffle(QUESTIONS[u.no].map(r => r[0])).slice(0, 10) }; },
-    verse: () => ({ label: "암송 구절", ids: shuffle([...VERSE_QUESTIONS.map(r => r[0]), ...VERSE_FROM_UNITS]).slice(0, 10) }),
+    verse: () => {
+      // 객관식 7문제 + 직접 입력 3문제 (직접 입력은 짧은 어구 위주), 같은 어구는 한 번만
+      const pool = shuffle(Object.entries(VERSE_BLANKS).flatMap(([v, list]) => list.map((b, k) => ({ key: `${v}-${k}`, len: b[0].replace(/\s/g, "").length }))));
+      const sa = pool.filter(p => p.len <= 10).slice(0, 3);
+      const mc = pool.filter(p => !sa.includes(p)).slice(0, 7);
+      return { label: "암송 구절", ids: [...mc.map(p => `vb-${p.key}-m`), ...sa.map(p => `vb-${p.key}-s`)] };
+    },
     abbr: () => ({ label: "성경 약어", ids: shuffle(ALLBOOKS).slice(0, 10).map(b => `ab-${Math.random() < .5 ? "n" : "a"}-${b[0]}`) }),
-    wrong: () => ({ label: "오답 다시 풀기", ids: shuffle(Object.keys(myWrong())).slice(0, 10) })
+    wrong: () => ({ label: "오답 다시 풀기", ids: shuffle(Object.keys(myWrong()).filter(id => getQ(id))).slice(0, 10) })
   };
   function start(kind) {
     requireUser(() => {
       const m = MODES[kind]();
-      const list = m.ids.map(getQ).filter(Boolean).map(q => ({ ...q, opts: shuffle([q.a, ...q.w]) }));
+      const list = m.ids.map(getQ).filter(Boolean).map(q => ({ ...q, opts: q.type === "sa" ? [] : shuffle([q.a, ...q.w]) }));
       if (!list.length) return;
       RUN = { kind, label: m.label, unit: m.unit, list, i: 0, score: 0, answers: [], t0: performance.now(), t1: 0, done: false };
       $("#run-mode").textContent = m.label;
@@ -333,17 +372,31 @@
     const q = RUN.list[RUN.i];
     $("#q-count").textContent = `${RUN.i + 1} / ${RUN.list.length}`;
     $("#q-bar").style.width = (RUN.i / RUN.list.length * 100) + "%";
-    $("#q-text").textContent = q.q;
+    $("#q-head").hidden = !q.head; $("#q-head").textContent = q.head || "";
+    if (q.parts) $("#q-text").replaceChildren(q.parts[0], el("span", "blank", "?"), q.parts[1]);
+    else $("#q-text").textContent = q.q;
     $("#q-fb").textContent = ""; $("#q-fb").className = "fb";
     $("#q-ref").textContent = ""; $("#q-next").hidden = true;
+    const sa = q.type === "sa";
+    $("#q-opts").hidden = sa; $("#q-sa").hidden = !sa;
     $("#q-opts").replaceChildren(...q.opts.map(o => {
       const b = el("button", "opt", o); b.type = "button";
       b.addEventListener("click", () => answer(o)); return b;
     }));
+    if (sa) { $("#q-sa-in").value = ""; $("#q-sa-in").disabled = false; $("#q-sa-ok").disabled = false; $("#q-sa-in").focus({ preventScroll: true }); }
     window.scrollTo({ top: 0 }); $("#runner").scrollTop = 0;
   }
+  $("#q-sa").addEventListener("submit", e => {
+    e.preventDefault();
+    const v = $("#q-sa-in").value.trim();
+    if (!v || !RUN || $("#q-sa-in").disabled) { $("#q-sa-in").focus(); return; }
+    answer(v);
+  });
   function answer(choice) {
-    const q = RUN.list[RUN.i], ok = choice === q.a;
+    const q = RUN.list[RUN.i];
+    const ok = q.type === "sa" ? norm(choice) === norm(q.a) : choice === q.a;
+    if (q.type === "sa") { $("#q-sa-in").disabled = true; $("#q-sa-ok").disabled = true; }
+    if (q.parts) $("#q-text .blank").textContent = q.a;
     if (ok) RUN.score++;
     RUN.answers.push({ q, ok, picked: choice });
     document.querySelectorAll("#q-opts .opt").forEach(b => {
@@ -470,7 +523,7 @@
       const p = placeOf(rows, i), li = el("li");
       if (r.name === rankName()) li.className = "me";
       li.append(el("span", "rank" + (p <= 3 ? " r" + p : ""), String(p)));
-      const nm = el("span", "bname", r.name); if (r.name === rankName()) nm.append(el("small", null, "나"));
+      const nm = el("span", "bname", showName(r.name)); if (r.name === rankName()) nm.append(el("small", null, "나"));
       li.append(nm);
       const pts = el("span", "bpts"); pts.append(el("b", null, `${r.score}/${r.total}`), el("span", null, fmt(r.ms)));
       li.append(pts); ul.append(li);

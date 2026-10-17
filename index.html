@@ -45,6 +45,15 @@ header.top{background:var(--sky);color:var(--on-sky);padding-top:env(safe-area-i
 .brand{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:20px 8px}
 .logo{font-family:var(--f-head);font-size:clamp(2.1rem,9vw,2.9rem);line-height:1;letter-spacing:-.01em}
 .logo .namu{color:var(--lime)}
+.church{font-family:"Quicksand",sans-serif;font-weight:500;font-size:1rem;letter-spacing:.01em;line-height:1;margin-bottom:8px;white-space:nowrap}
+.church .m{color:var(--lime)}
+.church.big{font-size:clamp(1.35rem,6vw,1.8rem);margin-bottom:4px}
+.login-top .logo{font-size:clamp(2.6rem,12vw,3.4rem)}
+.qhead{font-family:var(--f-num);font-weight:700;color:var(--sky-ink);font-size:.95rem}
+.qtext .blank{display:inline-block;min-width:4.5em;border-bottom:2.5px solid var(--sky);color:var(--sky-ink);text-align:center;font-family:var(--f-num);font-weight:700;padding-inline:4px}
+.sa{display:flex;gap:8px}
+.sa .text-in{flex:1;min-width:0;font-size:1.05rem}
+.sa-hint{font-size:.82rem;color:var(--muted)}
 .sub{font-size:.88rem;opacity:.95;margin-top:6px}
 .who-btn{border:1.5px solid rgba(255,255,255,.7);background:transparent;color:var(--on-sky);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.88rem;cursor:pointer;white-space:nowrap}
 .who-btn:hover{background:rgba(255,255,255,.15)}
@@ -72,7 +81,7 @@ section.panel{display:grid;gap:16px}
 
 /* 진행 순서 */
 .steps{list-style:none;margin:0;padding:0;display:grid}
-.steps li{display:grid;grid-template-columns:78px 1fr;gap:12px;padding-block:10px;border-top:1px dashed var(--line)}
+.steps li{display:grid;grid-template-columns:44px 1fr;gap:12px;padding-block:10px;border-top:1px dashed var(--line)}
 .steps li:first-child{border-top:0}
 .steps .t{font-family:var(--f-num);font-weight:700;color:var(--sky-ink);font-variant-numeric:tabular-nums}
 
@@ -94,7 +103,8 @@ section.panel{display:grid;gap:16px}
 .unit-pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .unit-pills button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer;color:var(--fg)}
 .unit-pills button[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:var(--on-sky)}
-.unit-pills .n{font-family:var(--f-num)}
+.unit-pills button{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px}
+.unit-pills .n{font-family:var(--f-num);font-weight:700;width:26px;height:26px;border-radius:50%;background:var(--lime);color:#11293A;display:inline-grid;place-items:center;font-size:.9rem}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:.84rem;padding:3px 11px;border-radius:999px;background:var(--sunk)}
 .scenes{list-style:none;margin:0;padding:0;display:grid;gap:0}
@@ -147,9 +157,24 @@ section.panel{display:grid;gap:16px}
 .ov-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .x{border:0;background:var(--sunk);width:40px;height:40px;border-radius:50%;font-size:1.3rem;cursor:pointer;line-height:1}
 .members{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
-.members button{border:1.5px solid var(--line);background:var(--surface);padding:14px 6px;border-radius:14px;font-family:var(--f-head);font-size:1.15rem;cursor:pointer;color:var(--fg)}
-.members button:hover,.members button[aria-pressed="true"]{border-color:var(--sky);background:var(--sky-soft)}
-.members button.guest{font-family:var(--f-body);font-size:.95rem;color:var(--muted)}
+/* 이름 고르기: 메인 헤더와 같은 하늘색 띠 + 흰 카드 */
+.overlay.login{background:var(--bg);padding-top:0}
+.login-top{background:var(--sky);color:var(--on-sky);padding-top:env(safe-area-inset-top,0px)}
+.login-top .wrap{position:relative;padding-block:44px 64px;display:grid;gap:10px;justify-items:start}
+.login-top .x{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.18);color:var(--on-sky)}
+.login-body{margin-top:-40px}
+.login-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px 20px;display:grid;gap:16px;box-shadow:0 10px 30px rgba(10,111,168,.12)}
+.combo{position:relative;display:grid;gap:6px}
+.combo-in{font:inherit;font-size:1.05rem;width:100%;padding:13px 44px 13px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
+.combo-in:focus{border-color:var(--sky);outline:none;box-shadow:0 0 0 3px var(--sky-soft)}
+.combo-caret{position:absolute;right:14px;bottom:13px;pointer-events:none;color:var(--muted);font-size:.9rem}
+.name-list{list-style:none;margin:0;padding:6px;max-height:232px;overflow-y:auto;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);display:grid;gap:2px;overscroll-behavior:contain}
+.name-list button{width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:10px;font-family:var(--f-head);font-size:1.1rem;cursor:pointer;color:var(--fg);display:flex;justify-content:space-between;align-items:center}
+.name-list button:hover,.name-list button.active{background:var(--sky-soft)}
+.name-list button[aria-selected="true"]{background:var(--sky);color:var(--on-sky)}
+.name-list .guest{font-family:var(--f-body);font-size:.95rem;color:var(--sky-ink);border-top:1px dashed var(--line);border-radius:0 0 10px 10px;margin-top:4px}
+.name-list .none{padding:10px 12px;color:var(--muted);font-size:.9rem}
+.login-hint{font-size:.85rem;color:var(--muted)}
 .pin{font-family:var(--f-num);font-size:1.6rem;letter-spacing:.5em;text-align:center;width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
 .field{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}
 .text-in{font:inherit;width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
@@ -183,6 +208,7 @@ section.panel{display:grid;gap:16px}
 <header class="top">
   <div class="wrap brand">
     <div>
+      <div class="church" aria-label="Miracle Pillar Church"><span class="m">miracle</span> pillar church</div>
       <div class="logo"><span class="namu">나무</span>필라</div>
       <p class="sub">바이블 챔피언십 준비 · <span class="num">10.25</span></p>
     </div>
@@ -202,14 +228,15 @@ section.panel{display:grid;gap:16px}
   <!-- 나무필라 연습게임 -->
   <section class="panel" id="game">
     <div class="card hero">
-      <span class="eyebrow">Today · 15 min</span>
-      <h2>오늘 나무필라 순서</h2>
+      <h2>10/18 나무필라 활동</h2>
+      <p>10월 25일 바이블 챔피언십을 앞두고, 오늘은 출제 범위의 첫 부분인 <b>1단원 아브라함</b>(창세기 12–25장)을 함께 공부하고 연습게임으로 실력을 겨뤄 봐요.</p>
       <ol class="steps">
-        <li><span class="t">0–2분</span><span>링크 열고 <b>내 이름 고르기</b>, 숫자 4자리 정하기</span></li>
-        <li><span class="t">2–7분</span><span><b>1단원 아브라함</b> 요약 함께 읽기 <button class="btn small" id="go-unit1" type="button">1단원 열기</button></span></li>
-        <li><span class="t">7–12분</span><span>연습게임 12문제. 모두 같은 문제예요</span></li>
-        <li><span class="t">12–15분</span><span>랭킹 발표와 시상</span></li>
+        <li><span class="t">하나</span><span><b>내 이름 고르기.</b> 처음이면 숫자 4자리를 정해요. 다른 기기에서 들어올 때 필요해요.</span></li>
+        <li><span class="t">둘</span><span><b>1단원 아브라함 요약을 함께 읽기.</b> 암송 구절 두 개(창 12:1, 22:14)도 같이 봐요. <button class="btn small" id="go-unit1" type="button">1단원 열기</button></span></li>
+        <li><span class="t">셋</span><span><b>나무필라 연습게임 풀기.</b> 모두 같은 12문제를 풀어요. 방금 읽은 요약과 암송 구절에서 나와요.</span></li>
+        <li><span class="t">넷</span><span><b>랭킹 확인.</b> 많이 맞힌 순서, 같으면 빨리 푼 순서예요.</span></li>
       </ol>
+      <p class="muted" style="font-size:.9rem">오늘 이후에는 <b>단원 공부</b> 탭에서 남은 2–5단원을 각자 공부하고, 틀린 문제는 <b>오답 노트</b>에서 다시 풀어요.</p>
     </div>
     <div class="card">
       <div class="row"><h2>나무필라 연습게임</h2><span class="muted num">12 Q</span></div>
@@ -263,7 +290,7 @@ section.panel{display:grid;gap:16px}
   <section class="panel" id="memo" hidden>
     <div class="card" id="verse-card">
       <div class="row"><h2>필수 암송 5구절</h2><button class="btn small" id="toggle-verses" type="button" aria-pressed="false">가리기</button></div>
-      <p class="muted" style="font-size:.9rem">개역개정 본문이에요. 가리기를 켠 뒤 구절을 누르면 잠깐 보여요.</p>
+      <p class="muted" style="font-size:.9rem">구절을 누르면 내용이 보입니다.</p>
       <div class="verses" id="all-verses"></div>
       <button class="btn primary big" id="start-verse" type="button">암송 퀴즈 풀기</button>
     </div>
@@ -289,27 +316,36 @@ section.panel{display:grid;gap:16px}
 </main>
 
 <!-- 이름 고르기 -->
-<div class="overlay" id="login" hidden role="dialog" aria-modal="true" aria-labelledby="login-title">
-  <div class="wrap">
-    <div class="ov-head"><h2 id="login-title">나는 누구일까요?</h2><button class="x" id="login-close" type="button" aria-label="닫기">×</button></div>
-    <div id="step-name" class="card">
-      <p class="muted">내 이름을 눌러주세요.</p>
-      <div class="members" id="members"></div>
+<div class="overlay login" id="login" hidden role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="login-top">
+    <div class="wrap">
+      <button class="x" id="login-close" type="button" aria-label="닫기">×</button>
+      <div class="church big" aria-label="Miracle Pillar Church"><span class="m">miracle</span> pillar church</div>
+      <div class="logo"><span class="namu">나무</span>필라</div>
+      <p class="sub">바이블 챔피언십 준비 · <span class="num">10.25</span></p>
     </div>
-    <div id="step-pin" class="card" hidden>
-      <h3 id="pin-title"></h3>
-      <p class="muted" id="pin-help"></p>
-      <label class="field" for="pin1"><span id="pin1-label">숫자 4자리</span><input class="pin" id="pin1" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
-      <label class="field" for="pin2" id="pin2-wrap" hidden>한 번 더 입력<input class="pin" id="pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
-      <p class="msg" id="pin-msg" aria-live="polite"></p>
-      <div class="row"><button class="btn" id="pin-back" type="button">이름 다시 고르기</button><button class="btn primary" id="pin-ok" type="button">확인</button></div>
-    </div>
-    <div id="step-guest" class="card" hidden>
-      <h3>손님으로 참여하기</h3>
-      <label class="field" for="guest-name">이름<input class="text-in" id="guest-name" maxlength="10" placeholder="예: 김방문"></label>
-      <p class="msg" id="guest-msg" aria-live="polite"></p>
-      <div class="row"><button class="btn" id="guest-back" type="button">이름 다시 고르기</button><button class="btn primary" id="guest-ok" type="button">확인</button></div>
-    </div>
+  </div>
+  <div class="wrap login-body">
+    <form class="login-card" id="login-form" autocomplete="off">
+      <h2 id="login-title">반가워요! 이름을 알려주세요</h2>
+      <div class="combo">
+        <label class="field" for="name-in">이름</label>
+        <input class="combo-in" id="name-in" type="text" role="combobox" aria-controls="name-list" aria-expanded="true" placeholder="이름 입력 또는 아래에서 선택">
+        <span class="combo-caret" aria-hidden="true">▾</span>
+      </div>
+      <ul class="name-list" id="name-list" role="listbox" aria-label="필라원 명단"></ul>
+      <div id="guest-field" class="field" hidden>
+        <label for="guest-name">게스트 이름</label>
+        <input class="text-in" id="guest-name" maxlength="10" placeholder="예: 김방문">
+      </div>
+      <div id="pin-field" class="stack" hidden style="gap:10px">
+        <p class="login-hint" id="pin-help"></p>
+        <label class="field" for="pin1"><span id="pin1-label">숫자 4자리</span><input class="pin" id="pin1" type="password" inputmode="numeric" maxlength="4"></label>
+        <label class="field" for="pin2" id="pin2-wrap" hidden>한 번 더 입력<input class="pin" id="pin2" type="password" inputmode="numeric" maxlength="4"></label>
+      </div>
+      <p class="msg" id="login-msg" aria-live="polite"></p>
+      <button class="btn primary big" id="login-ok" type="submit">시작하기</button>
+    </form>
   </div>
 </div>
 
@@ -320,8 +356,13 @@ section.panel{display:grid;gap:16px}
     <div id="run-q" class="card">
       <div class="qmeta"><span id="q-count"></span><span id="q-timer">00:00</span></div>
       <div class="bar"><i id="q-bar"></i></div>
+      <p class="qhead" id="q-head" hidden></p>
       <p class="qtext" id="q-text"></p>
       <div class="opts" id="q-opts"></div>
+      <form class="stack" id="q-sa" hidden style="gap:6px">
+        <div class="sa"><input class="text-in" id="q-sa-in" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="답을 입력하세요"><button class="btn primary" id="q-sa-ok" type="submit">확인</button></div>
+        <span class="sa-hint">띄어쓰기는 채점하지 않아요.</span>
+      </form>
       <p class="fb" id="q-fb" aria-live="polite"></p>
       <div class="row"><span class="muted" id="q-ref"></span><button class="btn primary" id="q-next" type="button" hidden>다음</button></div>
     </div>
