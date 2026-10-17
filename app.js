@@ -525,10 +525,13 @@
           user = { ...user, token: null }; store.set("np-user", user);
           openLogin(); break;
         }
+        // 서버가 잠깐 바빠서 실패하면(예: 동시에 여러 명 제출) 버리지 않고 다음에 다시 보내요. 세 번까지.
+        if (!r.ok) { item.tries = (item.tries || 0) + 1; if (item.tries < 3) keep.push(item); status = "retry"; }
       }
       const sent = new Set(q.map(x => x.id));
       store.set("np-queue", [...keep, ...store.get("np-queue", []).filter(x => !sent.has(x.id))]);
       if (status === "ok") loadServerHist();
+      if (status === "retry") setTimeout(flush, 5000);
       flushing = null; return status;
     })();
     return flushing;
