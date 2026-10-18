@@ -8,6 +8,9 @@ window.API_URL = "https://script.google.com/macros/s/AKfycbygS-2PU8MGzyZgWdPo3DY
 /* 명단은 구글 시트 "명단" 탭에서 불러와요 (서버 주소가 없을 때만 아래 목록을 써요) */
 window.MEMBERS = [];
 
+/* 연습게임을 열고 닫을 수 있는 필라장 (Code.gs의 LEADER와 같아야 해요) */
+window.LEADER = "채은";
+
 /* 필수 암송 구절 – 개역개정 (대한성서공회) */
 window.VERSES = [
   { id: "v1", ref: "창세기 12:1", unit: 1, scene: "아브람을 부르심", text: "여호와께서 아브람에게 이르시되 너는 너의 고향과 친척과 아버지의 집을 떠나 내가 네게 보여 줄 땅으로 가라" },

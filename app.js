@@ -70,7 +70,7 @@
     // 게스트에게는 10/18 활동 대신 필라장의 인사를 먼저 보여줘요
     $("#guest-letter").hidden = !(u && u.guest);
     $("#activity").hidden = !!(u && u.guest);
-    renderWrong(); renderUnit(curUnit); renderGameNote(); loadServerHist(); flush(); logVisit();
+    renderWrong(); renderUnit(curUnit); renderGameNote(); renderGate(); loadServerHist(); flush(); logVisit();
   }
 
   /* ---------- 게스트 방문 기록: 이름을 입력하고 들어오면 시트에 남겨요 (같은 기기에서는 하루 한 번) ---------- */
@@ -387,6 +387,7 @@
     wrong: () => ({ label: "오답 다시 풀기", ids: shuffle(Object.keys(myWrong()).filter(id => getQ(id))).slice(0, 10) })
   };
   function start(kind) {
+    if (kind === "game" && !canStartGame()) { closeOverlay("#runner"); renderGate(); return; }
     requireUser(() => {
       const m = MODES[kind]();
       const list = m.ids.map(getQ).filter(Boolean).map(q => ({ ...q, opts: q.type === "sa" ? [] : shuffle([q.a, ...q.w]) }));
@@ -498,7 +499,8 @@
         const mine = rows[me];
         const first = mine.score === att.score && Math.abs(mine.ms - ms) < 1500;
         note.textContent = (first ? `랭킹 ${placeOf(rows, me)}등이에요!` : `랭킹에는 첫 기록(${mine.score}점)이 올라가 있어요. 지금 순위 ${placeOf(rows, me)}등.`);
-      } else note.textContent = res === "ok" ? "기록을 보냈어요. 잠시 뒤 랭킹을 새로고침해 보세요." : "전송이 늦어지고 있어요. 자동으로 다시 보내니 이 화면을 그대로 두셔도 돼요.";
+      } else if (API && gameOpen === false && res === "ok") note.textContent = "게임이 열리기 전에 푼 기록이라 랭킹에는 올라가지 않아요. (풀이기록에는 남아요)";
+      else note.textContent = res === "ok" ? "기록을 보냈어요. 잠시 뒤 랭킹을 새로고침해 보세요." : "전송이 늦어지고 있어요. 자동으로 다시 보내니 이 화면을 그대로 두셔도 돼요.";
     } else if (API) note.textContent = res === "ok" ? "기록을 저장했어요." : "전송이 늦어지고 있어요. 자동으로 다시 보낼게요.";
   }
 
@@ -563,6 +565,7 @@
   const placeOf = (rows, i) => { let p = i; while (p > 0 && rows[p - 1].score === rows[i].score && rows[p - 1].ms === rows[i].ms) p--; return p + 1; };
   let lastRows = null;
   async function loadRanking() {
+    lastPoll = Date.now();
     let rows;
     if (!API) {
       const g = myHist().filter(h => h.mode === GAME_LABEL);
@@ -572,7 +575,7 @@
     } else {
       // 지난번 랭킹을 먼저 보여주고, 서버 응답이 오면 바꿔요
       if (!lastRows) { const c = store.get("np-rank", null); if (c) { lastRows = c; renderBoard(c); renderGameNote(); } }
-      try { const r = await apiGet({ action: "ranking" }); if (!r.ok) throw 0; rows = r.ranking; store.set("np-rank", rows); $("#rank-note").hidden = true; }
+      try { const r = await apiGet({ action: "ranking" }); if (!r.ok) throw 0; rows = r.ranking; store.set("np-rank", rows); gameOpen = "gameOpen" in r ? !!r.gameOpen : true; store.set("np-gameopen", gameOpen); renderGate(); $("#rank-note").hidden = true; }
       catch { $("#rank-note").hidden = false; $("#rank-note").textContent = "랭킹을 불러오지 못했어요. 새로고침을 눌러주세요."; return lastRows; }
     }
     lastRows = rows; renderBoard(rows); renderGameNote(); return rows;
@@ -596,10 +599,42 @@
     n.textContent = mine ? `이미 랭킹에 올라가 있어요 (${mine.score}/${mine.total}). 다시 풀 수 있지만 순위는 첫 기록 기준이에요.` : "랭킹에는 첫 번째 기록만 올라가요.";
   }
   $("#refresh-rank").addEventListener("click", loadRanking);
-  setInterval(() => { if (!document.hidden && !$("#game").hidden && $("#runner").hidden) loadRanking(); }, 15000);
+  let lastPoll = 0;
+  setInterval(() => {
+    if (document.hidden || $("#game").hidden || !$("#runner").hidden) return;
+    const every = API && gameOpen !== true ? 5000 : 15000;   // 게임이 닫혀 있으면 더 자주 확인해서 열리자마자 풀려요
+    if (Date.now() - lastPoll >= every) loadRanking();
+  }, 1000);
+
+  /* ---------- 연습게임 열기/닫기: 필라장만 ---------- */
+  let gameOpen = API ? store.get("np-gameopen", null) : true;
+  const isLeader = () => !!API && !!user && !user.guest && !!user.token && user.name === (window.LEADER || "");
+  const canStartGame = () => !API || gameOpen === true || isLeader();
+  function renderGate() {
+    const open = !API || gameOpen === true, lead = isLeader(), can = open || lead, b = $("#start-game");
+    b.classList.toggle("locked", !can); b.setAttribute("aria-disabled", String(!can));
+    b.textContent = open ? "게임 시작" : lead ? "게임 시작 (필라장 미리보기, 랭킹 제외)" : gameOpen === null ? "게임 상태 확인 중…" : "필라장이 게임을 열면 시작할 수 있어요";
+    $("#leader-box").hidden = !lead;
+    if (lead) {
+      const s = $("#gate-state"); s.className = "state " + (open ? "on" : "off");
+      s.textContent = open ? "지금 게임이 열려 있어요" : "지금 게임이 닫혀 있어요";
+      $("#gate-btn").textContent = open ? "게임 닫기" : "게임 열기";
+      $("#gate-btn").className = "btn" + (open ? "" : " primary");
+    }
+  }
+  $("#gate-btn").addEventListener("click", async () => {
+    const btn = $("#gate-btn"), want = gameOpen !== true;
+    btn.disabled = true; btn.textContent = want ? "여는 중…" : "닫는 중…";
+    try {
+      const r = await apiPost({ action: "setGame", name: user.name, token: user.token, open: want });
+      if (!r.ok) throw new Error(r.error);
+      gameOpen = r.gameOpen; store.set("np-gameopen", gameOpen);
+    } catch (e) { $("#game-note").textContent = "게임 상태를 바꾸지 못했어요. " + ((e && e.message) || "다시 눌러 주세요."); }
+    btn.disabled = false; renderGate();
+  });
 
   /* ---------- 시작 버튼 ---------- */
-  $("#start-game").addEventListener("click", () => start("game"));
+  $("#start-game").addEventListener("click", () => { if (!canStartGame()) { renderGate(); return; } start("game"); });
   $("#start-unit").addEventListener("click", () => start("unit"));
   $("#start-verse").addEventListener("click", () => start("verse"));
   $("#start-abbr").addEventListener("click", () => start("abbr"));
